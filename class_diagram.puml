@@ -1,0 +1,649 @@
+@startuml
+!theme plain
+
+skinparam linetype ortho
+skinparam classRoundCorner 0
+skinparam classBorderThickness 2
+skinparam classFontName "Times New Roman"
+skinparam classFontSize 14
+skinparam classFontStyle normal
+skinparam classFontColor black
+skinparam classAttributeIconSize 0
+skinparam classBorderColor black
+skinparam classBackgroundColor white
+skinparam classArrowColor black
+skinparam classAbstractFontStyle italic
+skinparam classAbstractFontColor black
+skinparam classAbstractUnderline true
+skinparam inheritanceArrowColor black
+
+hide circle
+
+' Базовые классы и исключения
+class TransportException {
+    - message : string
+    + TransportException(msg : string)
+    + {virtual} ~TransportException()
+    + what() : const char*
+}
+
+class InputException {
+    + InputException(msg : string)
+    + {virtual} ~InputException()
+}
+
+class FileException {
+    + FileException(filename : string, operation : string)
+    + FileException(msg : string)
+    + {virtual} ~FileException()
+}
+
+class ContainerException {
+    + ContainerException(msg : string)
+    + {virtual} ~ContainerException()
+}
+
+' Иерархия транспортных средств
+abstract class Vehicle {
+    # type : string
+    # model : string
+    # licensePlate : string
+    + Vehicle(t : string, m : string, lp : string)
+    + {virtual} ~Vehicle()
+    + getInfo() : string
+    + getType() : string
+    + getModel() : string
+    + getLicensePlate() : string
+    + serialize() : string
+    + {static} deserialize(data : string) : shared_ptr<Vehicle>
+}
+
+class FuelTransport {
+    # capacity : int
+    # fuelType : string
+    + FuelTransport(t : string, m : string, lp : string, cap : int, fuel : string)
+    + {virtual} ~FuelTransport()
+    + getCapacity() : int
+    + setCapacity(cap : int) : void
+    + getFuelType() : string
+    + setFuelType(fuel : string) : void
+    + serialize() : string
+}
+
+class ElectricTransport {
+    # capacity : int
+    # voltage : double
+    + ElectricTransport(t : string, m : string, lp : string, cap : int, volt : double)
+    + {virtual} ~ElectricTransport()
+    + getCapacity() : int
+    + setCapacity(cap : int) : void
+    + getVoltage() : double
+    + setVoltage(volt : double) : void
+    + serialize() : string
+}
+
+class Bus {
+    + Bus(m : string, lp : string, cap : int, fuel : string)
+    + ~Bus()
+}
+
+class Tram {
+    + Tram(m : string, lp : string, cap : int, volt : double)
+    + ~Tram()
+}
+
+class Trolleybus {
+    + Trolleybus(m : string, lp : string, cap : int, volt : double)
+    + ~Trolleybus()
+}
+
+' Классы данных
+class Driver {
+    - firstName : string
+    - lastName : string
+    - middleName : string
+    + Driver(fname : string, lname : string, mname : string)
+    + getFullName() : string
+    + getFirstName() : string
+    + getLastName() : string
+    + getMiddleName() : string
+    + ==(other : Driver) : bool
+    + serialize() : string
+    + {static} deserialize(data : string) : shared_ptr<Driver>
+}
+
+class Stop {
+    - id : int
+    - name : string
+    + Stop(stopId : int, stopName : string)
+    + getId() : int
+    + getName() : string
+    + ==(other : Stop) : bool
+    + serialize() : string
+    + {static} deserialize(data : string) : Stop
+}
+
+class Time {
+    - hours : int
+    - minutes : int
+    + Time(h : int, m : int)
+    + Time(timeStr : string)
+    + getTotalMinutes() : int
+    + getHours() : int
+    + getMinutes() : int
+    + <(other : Time) : bool
+    + <=(other : Time) : bool
+    + >(other : Time) : bool
+    + >=(other : Time) : bool
+    + ==(other : Time) : bool
+    + !=(other : Time) : bool
+    + +(minutesToAdd : int) : Time
+    + -(minutesToSubtract : int) : Time
+    + -(other : Time) : int
+    + {friend} <<(os : ostream&, time : Time) : ostream&
+    + {friend} >>(is : istream&, time : Time&) : istream&
+    + serialize() : string
+    + {static} deserialize(data : string) : Time
+}
+
+class Route {
+    - number : int
+    - vehicleType : string
+    - startStop : string
+    - endStop : string
+    - allStops : vector<string>
+    - weekDays : set<int>
+    + Route(num : int, vType : string, stops : vector<string>, days : set<int>)
+    + containsStop(stop : string) : bool
+    + getStopPosition(stop : string) : int
+    + isStopBefore(stopA : string, stopB : string) : bool
+    + getNumber() : int
+    + getVehicleType() : string
+    + getStartStop() : string
+    + getEndStop() : string
+    + getAllStops() : const vector<string>&
+    + getWeekDays() : const set<int>&
+    + operatesOnDay(day : int) : bool
+    + serialize() : string
+    + {static} deserialize(data : string) : shared_ptr<Route>
+}
+
+class Trip {
+    - tripId : int
+    - route : shared_ptr<Route>
+    - vehicle : shared_ptr<Vehicle>
+    - driver : shared_ptr<Driver>
+    - startTime : Time
+    - schedule : map<string, Time>
+    - weekDay : int
+    + Trip(id : int, r : shared_ptr<Route>, v : shared_ptr<Vehicle>, d : shared_ptr<Driver>, start : Time, day : int)
+    + setArrivalTime(stop : string, time : Time) : void
+    + getArrivalTime(stop : string) : Time
+    + hasStop(stop : string) : bool
+    + getTripId() : int
+    + getRoute() : shared_ptr<Route>
+    + getVehicle() : shared_ptr<Vehicle>
+    + getDriver() : shared_ptr<Driver>
+    + getStartTime() : Time
+    + getSchedule() : const map<string, Time>&
+    + getWeekDay() : int
+    + getEstimatedEndTime() : Time
+    + serialize() : string
+    + {static} deserialize(data : string, system : TransportSystem*) : shared_ptr<Trip>
+}
+
+class Journey {
+    - trips : vector<shared_ptr<Trip>>
+    - transferPoints : vector<string>
+    - startTime : Time
+    - endTime : Time
+    - transferCount : int
+    + Journey(tripList : vector<shared_ptr<Trip>>, transfers : vector<string>, start : Time, end : Time)
+    + getTotalDuration() : int
+    + getTransferCount() : int
+    + getStartTime() : Time
+    + getEndTime() : Time
+    + getTrips() : const vector<shared_ptr<Trip>>&
+    + getTransferPoints() : const vector<string>&
+    + display() : void
+}
+
+' Шаблонный класс
+class DynamicArray<T> {
+    - data : T*
+    - capacity : size_t
+    - size_ : size_t
+    + DynamicArray()
+    + DynamicArray(initialSize : size_t)
+    + DynamicArray(other : const DynamicArray&)
+    + =(other : const DynamicArray&) : DynamicArray&
+    + ~DynamicArray()
+    + push_back(value : const T&) : void
+    + push_back(value : T&&) : void
+    + erase(it : Iterator) : void
+    + erase(first : Iterator, last : Iterator) : void
+    + [](index : size_t) : T&
+    + [](index : size_t) : const T&
+    + front() : T&
+    + front() : const T&
+    + back() : T&
+    + back() : const T&
+    + size() : size_t
+    + empty() : bool
+    + clear() : void
+    + begin() : Iterator
+    + end() : Iterator
+    + begin() : const Iterator
+    + end() : const Iterator
+}
+
+' Итератор для DynamicArray
+class "DynamicArray<T>::Iterator" as DynamicArrayIterator {
+    - ptr : T*
+    + Iterator(p : T*)
+    + *() : T&
+    + *() : const T&
+    + ->() : T*
+    + ->() : const T*
+    + ++() : Iterator&
+    + ++(int) : Iterator
+    + --() : Iterator&
+    + --(int) : Iterator
+    + ==(other : Iterator) : bool
+    + !=(other : Iterator) : bool
+    + +(n : int) : Iterator
+    + -(n : int) : Iterator
+    + {friend} +(n : int, it : Iterator) : Iterator
+    + {friend} -(a : Iterator, b : Iterator) : int
+    + <(other : Iterator) : bool
+    + >(other : Iterator) : bool
+    + <=(other : Iterator) : bool
+    + >=(other : Iterator) : bool
+    + +=(n : int) : Iterator&
+    + -=(n : int) : Iterator&
+    + [](n : int) : T&
+    + [](n : int) : const T&
+}
+
+' Паттерн Command
+abstract class Command {
+    + {virtual} ~Command()
+    + execute() : void
+    + undo() : void
+    + getDescription() : string
+}
+
+class CommandHistory {
+    - history : vector<unique_ptr<Command>>
+    - currentIndex : size_t
+    - MAX_HISTORY_SIZE : size_t
+    + executeCommand(cmd : unique_ptr<Command>) : void
+    + canUndo() : bool
+    + undo() : void
+    + clear() : void
+    + getLastCommandDescription() : string
+}
+
+class AddRouteCommand {
+    - system : TransportSystem*
+    - route : shared_ptr<Route>
+    + AddRouteCommand(sys : TransportSystem*, r : shared_ptr<Route>)
+    + {virtual} ~AddRouteCommand()
+    + execute() : void
+    + undo() : void
+    + getDescription() : string
+}
+
+class RemoveRouteCommand {
+    - system : TransportSystem*
+    - route : shared_ptr<Route>
+    - routeNumber : int
+    + RemoveRouteCommand(sys : TransportSystem*, num : int)
+    + {virtual} ~RemoveRouteCommand()
+    + execute() : void
+    + undo() : void
+    + getDescription() : string
+}
+
+class AddTripCommand {
+    - system : TransportSystem*
+    - trip : shared_ptr<Trip>
+    + AddTripCommand(sys : TransportSystem*, t : shared_ptr<Trip>)
+    + {virtual} ~AddTripCommand()
+    + execute() : void
+    + undo() : void
+    + getDescription() : string
+}
+
+class RemoveTripCommand {
+    - system : TransportSystem*
+    - trip : shared_ptr<Trip>
+    - tripId : int
+    + RemoveTripCommand(sys : TransportSystem*, id : int)
+    + {virtual} ~RemoveTripCommand()
+    + execute() : void
+    + undo() : void
+    + getDescription() : string
+}
+
+class AddVehicleCommand {
+    - system : TransportSystem*
+    - vehicle : shared_ptr<Vehicle>
+    + AddVehicleCommand(sys : TransportSystem*, v : shared_ptr<Vehicle>)
+    + {virtual} ~AddVehicleCommand()
+    + execute() : void
+    + undo() : void
+    + getDescription() : string
+}
+
+class RemoveVehicleCommand {
+    - system : TransportSystem*
+    - vehicle : shared_ptr<Vehicle>
+    - licensePlate : string
+    + RemoveVehicleCommand(sys : TransportSystem*, lp : string)
+    + {virtual} ~RemoveVehicleCommand()
+    + execute() : void
+    + undo() : void
+    + getDescription() : string
+}
+
+class AddStopCommand {
+    - system : TransportSystem*
+    - stop : Stop
+    + AddStopCommand(sys : TransportSystem*, s : Stop)
+    + {virtual} ~AddStopCommand()
+    + execute() : void
+    + undo() : void
+    + getDescription() : string
+}
+
+class RemoveStopCommand {
+    - system : TransportSystem*
+    - stop : Stop
+    - stopId : int
+    + RemoveStopCommand(sys : TransportSystem*, id : int)
+    + {virtual} ~RemoveStopCommand()
+    + execute() : void
+    + undo() : void
+    + getDescription() : string
+}
+
+class AddDriverCommand {
+    - system : TransportSystem*
+    - driver : shared_ptr<Driver>
+    + AddDriverCommand(sys : TransportSystem*, d : shared_ptr<Driver>)
+    + {virtual} ~AddDriverCommand()
+    + execute() : void
+    + undo() : void
+    + getDescription() : string
+}
+
+class RemoveDriverCommand {
+    - system : TransportSystem*
+    - driver : shared_ptr<Driver>
+    - firstName : string
+    - lastName : string
+    - middleName : string
+    + RemoveDriverCommand(sys : TransportSystem*, d : shared_ptr<Driver>)
+    + {virtual} ~RemoveDriverCommand()
+    + execute() : void
+    + undo() : void
+    + getDescription() : string
+}
+
+' Паттерн Strategy (алгоритмы)
+abstract class Algorithm {
+    # system : TransportSystem*
+    + Algorithm(sys : TransportSystem*)
+    + {virtual} ~Algorithm()
+    + execute() : void
+    + getDescription() : string
+    + setSystem(sys : TransportSystem*) : void
+}
+
+abstract class PathFindingAlgorithm {
+    + PathFindingAlgorithm(sys : TransportSystem*)
+    + {virtual} ~PathFindingAlgorithm()
+    + findPath(start : string, end : string, departureTime : Time) : vector<Journey>
+    + execute() : void
+}
+
+class BFSAlgorithm {
+    - maxTransfers : int
+    + BFSAlgorithm(sys : TransportSystem*, maxTransfers : int)
+    + {virtual} ~BFSAlgorithm()
+    + findPath(start : string, end : string, departureTime : Time) : vector<Journey>
+    + execute() : void
+    + getDescription() : string
+}
+
+class FastestPathAlgorithm {
+    + FastestPathAlgorithm(sys : TransportSystem*)
+    + {virtual} ~FastestPathAlgorithm()
+    + findPath(start : string, end : string, departureTime : Time) : vector<Journey>
+    + execute() : void
+    + getDescription() : string
+}
+
+class MinimalTransfersAlgorithm {
+    + MinimalTransfersAlgorithm(sys : TransportSystem*)
+    + {virtual} ~MinimalTransfersAlgorithm()
+    + findPath(start : string, end : string, departureTime : Time) : vector<Journey>
+    + execute() : void
+    + getDescription() : string
+}
+
+class ArrivalTimeCalculationAlgorithm {
+    + ArrivalTimeCalculationAlgorithm(sys : TransportSystem*)
+    + {virtual} ~ArrivalTimeCalculationAlgorithm()
+    + calculateArrivalTimes(tripId : int, averageSpeed : double) : void
+    + execute() : void
+    + getDescription() : string
+}
+
+class RouteSearchAlgorithm {
+    + RouteSearchAlgorithm(sys : TransportSystem*)
+    + {virtual} ~RouteSearchAlgorithm()
+    + findRoutes(stopA : string, stopB : string) : vector<shared_ptr<Route>>
+    + execute() : void
+    + getDescription() : string
+}
+
+' Основные классы системы
+class DataManager {
+    - dataDirectory : string
+    + DataManager(dir : string)
+    + saveAllData(system : TransportSystem&) : void
+    + loadAllData(system : TransportSystem&) : void
+    - saveStops(system : TransportSystem&) : void
+    - saveVehicles(system : TransportSystem&) : void
+    - saveDrivers(system : TransportSystem&) : void
+    - saveRoutes(system : TransportSystem&) : void
+    - saveTrips(system : TransportSystem&) : void
+    - saveAdminCredentials(system : TransportSystem&) : void
+    - loadStops(system : TransportSystem&) : void
+    - loadVehicles(system : TransportSystem&) : void
+    - loadDrivers(system : TransportSystem&) : void
+    - loadRoutes(system : TransportSystem&) : void
+    - loadTrips(system : TransportSystem&) : void
+    - loadAdminCredentials(system : TransportSystem&) : void
+}
+
+class DriverSchedule {
+    - driverTrips : unordered_map<shared_ptr<Driver>, vector<shared_ptr<Trip>>>
+    - MAX_WORKING_HOURS : int
+    + assignTripToDriver(driver : shared_ptr<Driver>, trip : shared_ptr<Trip>) : void
+    + removeTripFromDriver(driver : shared_ptr<Driver>, tripId : int) : void
+    + isDriverAvailable(driver : shared_ptr<Driver>, startTime : Time, endTime : Time) : bool
+    + checkWorkingHoursCompliance(driver : shared_ptr<Driver>) : bool
+    + getDriverTrips(driver : shared_ptr<Driver>) : vector<shared_ptr<Trip>>
+    + getTotalWorkingMinutes(driver : shared_ptr<Driver>) : int
+}
+
+class JourneyPlanner {
+    - system : TransportSystem*
+    - bfsAlgorithm : unique_ptr<BFSAlgorithm>
+    - fastestAlgorithm : unique_ptr<FastestPathAlgorithm>
+    - minimalTransfersAlgorithm : unique_ptr<MinimalTransfersAlgorithm>
+    + JourneyPlanner(sys : TransportSystem*)
+    + findJourneysWithTransfers(startStop : string, endStop : string, departureTime : Time, maxTransfers : int) : vector<Journey>
+    + findAllJourneysWithTransfers(startStop : string, endStop : string, maxTransfers : int) : vector<Journey>
+    + findFastestJourney(startStop : string, endStop : string, departureTime : Time) : Journey
+    + findJourneyWithLeastTransfers(startStop : string, endStop : string, departureTime : Time) : Journey
+    + displayJourney(journey : Journey) : void
+}
+
+class TransportSystem {
+    - routes : vector<shared_ptr<Route>>
+    - trips : vector<shared_ptr<Trip>>
+    - vehicles : vector<shared_ptr<Vehicle>>
+    - drivers : vector<shared_ptr<Driver>>
+    - stops : DynamicArray<Stop>
+    - stopIdToName : unordered_map<int, string>
+    - adminCredentials : unordered_map<string, string>
+    - journeyPlanner : JourneyPlanner
+    - driverSchedule : DriverSchedule
+    - dataManager : DataManager
+    - commandHistory : CommandHistory
+    - arrivalTimeAlgorithm : unique_ptr<ArrivalTimeCalculationAlgorithm>
+    - routeSearchAlgorithm : unique_ptr<RouteSearchAlgorithm>
+    + TransportSystem()
+    + canUndo() : bool
+    + undo() : void
+    + getLastCommandDescription() : string
+    + authenticateAdmin(username : string, password : string) : bool
+    + addAdmin(username : string, password : string) : void
+    + getAdminCredentials() : const unordered_map<string, string>&
+    + setAdminCredentials(creds : unordered_map<string, string>) : void
+    + saveData() : void
+    + loadData() : void
+    + findRoutes(stopA : string, stopB : string) : vector<shared_ptr<Route>>
+    + getStopTimetable(stopId : int, startTime : Time, endTime : Time) : void
+    + getStopTimetableAll(stopName : string) : void
+    + calculateArrivalTimes(tripId : int, averageSpeed : double) : void
+    + getArrivalTimeAlgorithm() : ArrivalTimeCalculationAlgorithm*
+    + getRouteSearchAlgorithm() : RouteSearchAlgorithm*
+    + addRoute(route : shared_ptr<Route>) : void
+    + addTrip(trip : shared_ptr<Trip>) : void
+    + addVehicle(vehicle : shared_ptr<Vehicle>) : void
+    + addDriver(driver : shared_ptr<Driver>) : void
+    + addStop(stop : Stop) : void
+    + removeRoute(routeNumber : int) : void
+    + removeTrip(tripId : int) : void
+    + displayAllRoutes() : void
+    + displayAllTrips() : void
+    + displayAllVehicles() : void
+    + displayAllStops() : void
+    + getTrips() : const vector<shared_ptr<Trip>>&
+    + getRoutes() : const vector<shared_ptr<Route>>&
+    + getVehicles() : const vector<shared_ptr<Vehicle>>&
+    + getStops() : const DynamicArray<Stop>&
+    + getDrivers() : const vector<shared_ptr<Driver>>&
+    + getJourneyPlanner() : JourneyPlanner&
+    + getDriverSchedule() : DriverSchedule&
+    + findDriverByName(firstName : string, lastName : string, middleName : string) : shared_ptr<Driver>
+    + findVehicleByLicensePlate(licensePlate : string) : shared_ptr<Vehicle>
+    + findRouteByNumber(number : int) : shared_ptr<Route>
+    + getTripsThroughStop(stopName : string) : vector<shared_ptr<Trip>>
+    + getStopNameById(id : int) : string
+    + getRouteByNumber(number : int) : shared_ptr<Route>
+    + getTripById(id : int) : shared_ptr<Trip>
+    + getVehicleByLicensePlate(licensePlate : string) : shared_ptr<Vehicle>
+    + getStopById(id : int) : Stop
+    + addRouteDirect(route : shared_ptr<Route>) : void
+    + removeRouteDirect(routeNumber : int) : void
+    + addTripDirect(trip : shared_ptr<Trip>) : void
+    + removeTripDirect(tripId : int) : void
+    + addVehicleDirect(vehicle : shared_ptr<Vehicle>) : void
+    + removeVehicleDirect(licensePlate : string) : void
+    + addStopDirect(stop : Stop) : void
+    + removeStopDirect(stopId : int) : void
+    + addDriverDirect(driver : shared_ptr<Driver>) : void
+    + removeDriverDirect(driver : shared_ptr<Driver>) : void
+}
+
+' Наследование
+TransportException <|-- InputException
+TransportException <|-- FileException
+TransportException <|-- ContainerException
+
+Vehicle <|-- FuelTransport
+Vehicle <|-- ElectricTransport
+FuelTransport <|-- Bus
+ElectricTransport <|-- Tram
+ElectricTransport <|-- Trolleybus
+
+Command <|-- AddRouteCommand
+Command <|-- RemoveRouteCommand
+Command <|-- AddTripCommand
+Command <|-- RemoveTripCommand
+Command <|-- AddVehicleCommand
+Command <|-- RemoveVehicleCommand
+Command <|-- AddStopCommand
+Command <|-- RemoveStopCommand
+Command <|-- AddDriverCommand
+Command <|-- RemoveDriverCommand
+
+Algorithm <|-- PathFindingAlgorithm
+Algorithm <|-- ArrivalTimeCalculationAlgorithm
+Algorithm <|-- RouteSearchAlgorithm
+PathFindingAlgorithm <|-- BFSAlgorithm
+PathFindingAlgorithm <|-- FastestPathAlgorithm
+PathFindingAlgorithm <|-- MinimalTransfersAlgorithm
+
+' Композиция и агрегация
+TransportSystem *-- JourneyPlanner
+TransportSystem *-- DriverSchedule
+TransportSystem *-- DataManager
+TransportSystem *-- CommandHistory
+TransportSystem *-- ArrivalTimeCalculationAlgorithm
+TransportSystem *-- RouteSearchAlgorithm
+TransportSystem "1" *-- "0..*" Route : routes
+TransportSystem "1" *-- "0..*" Trip : trips
+TransportSystem "1" *-- "0..*" Vehicle : vehicles
+TransportSystem "1" *-- "0..*" Driver : drivers
+TransportSystem "1" *-- "0..*" Stop : stops
+
+Trip "1" --> "1" Route : route
+Trip "1" --> "1" Vehicle : vehicle
+Trip "1" --> "1" Driver : driver
+Trip "1" --> "1" Time : startTime
+Trip "1" --> "0..*" Time : schedule
+
+Journey "1" --> "0..*" Trip : trips
+Journey "1" --> "1" Time : startTime
+Journey "1" --> "1" Time : endTime
+
+Route "1" --> "0..*" Stop : allStops
+
+JourneyPlanner *-- BFSAlgorithm
+JourneyPlanner *-- FastestPathAlgorithm
+JourneyPlanner *-- MinimalTransfersAlgorithm
+
+CommandHistory "1" *-- "0..*" Command : history
+
+DriverSchedule "1" --> "0..*" Driver : driverTrips
+DriverSchedule "1" --> "0..*" Trip : trips
+
+AddRouteCommand --> TransportSystem
+RemoveRouteCommand --> TransportSystem
+AddTripCommand --> TransportSystem
+RemoveTripCommand --> TransportSystem
+AddVehicleCommand --> TransportSystem
+RemoveVehicleCommand --> TransportSystem
+AddStopCommand --> TransportSystem
+RemoveStopCommand --> TransportSystem
+AddDriverCommand --> TransportSystem
+RemoveDriverCommand --> TransportSystem
+
+BFSAlgorithm --> TransportSystem
+FastestPathAlgorithm --> TransportSystem
+MinimalTransfersAlgorithm --> TransportSystem
+ArrivalTimeCalculationAlgorithm --> TransportSystem
+RouteSearchAlgorithm --> TransportSystem
+JourneyPlanner --> TransportSystem
+DataManager --> TransportSystem
+
+DynamicArray "1" *-- "0..*" "DynamicArray<T>::Iterator" : Iterator
+
+@enduml
