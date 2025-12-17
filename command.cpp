@@ -24,6 +24,18 @@ void CommandHistory::undo() {
     history[currentIndex]->undo();
 }
 
+bool CommandHistory::canRedo() const {
+    return currentIndex < history.size();
+}
+
+void CommandHistory::redo() {
+    if (!canRedo()) {
+        throw ContainerException("Нет действий для повтора");
+    }
+    history[currentIndex]->execute();
+    currentIndex++;
+}
+
 void CommandHistory::clear() {
     history.clear();
     currentIndex = 0;
@@ -34,5 +46,12 @@ std::string CommandHistory::getLastCommandDescription() const {
         return history[currentIndex - 1]->getDescription();
     }
     return "Нет выполненных команд";
+}
+
+std::string CommandHistory::getNextCommandDescription() const {
+    if (currentIndex < history.size()) {
+        return history[currentIndex]->getDescription();
+    }
+    return "Нет действий для повтора";
 }
 

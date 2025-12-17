@@ -9,13 +9,11 @@
 #include "trip.h"
 #include "time.h"
 #include "stop.h"
-#include "journey.h"
 #include <iostream>
 #include <limits>
 #include <algorithm>
 #include <vector>
 #include <string>
-#include <set>
 
 void displayGuestMenu() {
     std::cout << "\n=== ГОСТЕВОЙ РЕЖИМ ===\n";
@@ -48,11 +46,11 @@ void displayAdminMenu() {
 }
 
 void displayLoginMenu() {
-    std::cout << "\n=== СИСТЕМА РАСПИСАНИЯ ГОРОДСКОГО ТРАНСПОРТА ===\n";
-    std::cout << "1. Войти как администратор\n";
+    std::cout << "=== СИСТЕМА РАСПИСАНИЯ ГОРОДСКОГО ТРАНСПОРТА ===\n";
+    std::cout << "\n1. Войти как администратор\n";
     std::cout << "2. Войти как гость\n";
     std::cout << "3. Сохранить и выйти\n";
-    std::cout << "Выберите опцию: ";
+    std::cout << "\nВыберите опцию: ";
 }
 
 void displayAllStopsForSelection(const TransportSystem& system) {
@@ -278,7 +276,7 @@ void adminAddStop(TransportSystem& system) {
 
 void adminAddDriver(TransportSystem& system) {
     try {
-        std::string firstName, lastName, middleName;
+        std::string firstName, lastName, middleName, category;
 
         std::cout << "Введите имя водителя: ";
         std::getline(std::cin, firstName);
@@ -286,8 +284,10 @@ void adminAddDriver(TransportSystem& system) {
         std::getline(std::cin, lastName);
         std::cout << "Введите отчество водителя (если есть, иначе Enter): ";
         std::getline(std::cin, middleName);
+        std::cout << "Введите категорию водительских прав (D, T, DT, B, C и т.д.): ";
+        std::getline(std::cin, category);
 
-        auto driver = std::make_shared<Driver>(firstName, lastName, middleName);
+        auto driver = std::make_shared<Driver>(firstName, lastName, middleName, category);
         system.addDriver(driver);
         std::cout << "Водитель успешно добавлен!\n";
 
@@ -355,21 +355,22 @@ void initializeTestData(TransportSystem& system) {
     system.addVehicleDirect(trolleybus5);
 
     // Водители (15 человек)
-    auto driver1 = std::make_shared<Driver>("Иван", "Петров", "Сергеевич");
-    auto driver2 = std::make_shared<Driver>("Мария", "Сидорова", "Ивановна");
-    auto driver3 = std::make_shared<Driver>("Алексей", "Козлов");
-    auto driver4 = std::make_shared<Driver>("Дмитрий", "Смирнов", "Владимирович");
-    auto driver5 = std::make_shared<Driver>("Елена", "Волкова");
-    auto driver6 = std::make_shared<Driver>("Сергей", "Новиков", "Александрович");
-    auto driver7 = std::make_shared<Driver>("Анна", "Морозова", "Дмитриевна");
-    auto driver8 = std::make_shared<Driver>("Владимир", "Лебедев");
-    auto driver9 = std::make_shared<Driver>("Ольга", "Соколова", "Андреевна");
-    auto driver10 = std::make_shared<Driver>("Николай", "Попов", "Игоревич");
-    auto driver11 = std::make_shared<Driver>("Татьяна", "Васильева");
-    auto driver12 = std::make_shared<Driver>("Андрей", "Федоров", "Сергеевич");
-    auto driver13 = std::make_shared<Driver>("Наталья", "Михайлова", "Владимировна");
-    auto driver14 = std::make_shared<Driver>("Павел", "Кузнецов");
-    auto driver15 = std::make_shared<Driver>("Юлия", "Орлова", "Александровна");
+    // Категории: D - автобусы, T - трамваи/троллейбусы, DT - универсальная
+    auto driver1 = std::make_shared<Driver>("Иван", "Петров", "Сергеевич", "D");
+    auto driver2 = std::make_shared<Driver>("Мария", "Сидорова", "Ивановна", "D");
+    auto driver3 = std::make_shared<Driver>("Алексей", "Козлов", "Викторович", "DT");
+    auto driver4 = std::make_shared<Driver>("Дмитрий", "Смирнов", "Владимирович", "D");
+    auto driver5 = std::make_shared<Driver>("Елена", "Волкова", "Петровна", "D");
+    auto driver6 = std::make_shared<Driver>("Сергей", "Новиков", "Александрович", "T");
+    auto driver7 = std::make_shared<Driver>("Анна", "Морозова", "Дмитриевна", "T");
+    auto driver8 = std::make_shared<Driver>("Владимир", "Лебедев", "Олегович", "T");
+    auto driver9 = std::make_shared<Driver>("Ольга", "Соколова", "Андреевна", "T");
+    auto driver10 = std::make_shared<Driver>("Николай", "Попов", "Игоревич", "T");
+    auto driver11 = std::make_shared<Driver>("Татьяна", "Васильева", "Николаевна", "DT");
+    auto driver12 = std::make_shared<Driver>("Андрей", "Федоров", "Сергеевич", "T");
+    auto driver13 = std::make_shared<Driver>("Наталья", "Михайлова", "Владимировна", "DT");
+    auto driver14 = std::make_shared<Driver>("Павел", "Кузнецов", "Борисович", "T");
+    auto driver15 = std::make_shared<Driver>("Юлия", "Орлова", "Александровна", "DT");
 
     system.addDriverDirect(driver1);
     system.addDriverDirect(driver2);
@@ -593,6 +594,194 @@ void initializeTestData(TransportSystem& system) {
         auto trip110 = std::make_shared<Trip>(110, route4, trolleybus1, driver10, Time("10:15"), 7);
         auto trip111 = std::make_shared<Trip>(111, route4, trolleybus2, driver11, Time("12:15"), 7);
         auto trip112 = std::make_shared<Trip>(112, route4, trolleybus3, driver12, Time("14:15"), 7);
+        
+        // Рейсы для вторника (день 2)
+        auto trip113 = std::make_shared<Trip>(113, route1, bus1, driver1, Time("06:30"), 2);
+        auto trip114 = std::make_shared<Trip>(114, route1, bus2, driver2, Time("08:00"), 2);
+        auto trip115 = std::make_shared<Trip>(115, route1, bus3, driver3, Time("09:30"), 2);
+        auto trip116 = std::make_shared<Trip>(116, route1, bus1, driver1, Time("11:00"), 2);
+        auto trip117 = std::make_shared<Trip>(117, route1, bus2, driver2, Time("13:00"), 2);
+        auto trip118 = std::make_shared<Trip>(118, route1, bus3, driver3, Time("15:00"), 2);
+        auto trip119 = std::make_shared<Trip>(119, route1, bus1, driver1, Time("17:00"), 2);
+        auto trip120 = std::make_shared<Trip>(120, route1, bus2, driver2, Time("19:00"), 2);
+        
+        auto trip121 = std::make_shared<Trip>(121, route2, bus2, driver2, Time("07:00"), 2);
+        auto trip122 = std::make_shared<Trip>(122, route2, bus4, driver4, Time("08:30"), 2);
+        auto trip123 = std::make_shared<Trip>(123, route2, bus5, driver5, Time("10:00"), 2);
+        auto trip124 = std::make_shared<Trip>(124, route2, bus2, driver2, Time("12:00"), 2);
+        auto trip125 = std::make_shared<Trip>(125, route2, bus4, driver4, Time("14:00"), 2);
+        auto trip126 = std::make_shared<Trip>(126, route2, bus5, driver5, Time("16:00"), 2);
+        auto trip127 = std::make_shared<Trip>(127, route2, bus2, driver2, Time("18:00"), 2);
+        
+        auto trip128 = std::make_shared<Trip>(128, route3, tram1, driver6, Time("06:00"), 2);
+        auto trip129 = std::make_shared<Trip>(129, route3, tram2, driver7, Time("07:30"), 2);
+        auto trip130 = std::make_shared<Trip>(130, route3, tram3, driver8, Time("09:00"), 2);
+        auto trip131 = std::make_shared<Trip>(131, route3, tram1, driver6, Time("11:30"), 2);
+        auto trip132 = std::make_shared<Trip>(132, route3, tram2, driver7, Time("13:30"), 2);
+        auto trip133 = std::make_shared<Trip>(133, route3, tram3, driver8, Time("15:30"), 2);
+        auto trip134 = std::make_shared<Trip>(134, route3, tram1, driver6, Time("17:30"), 2);
+        auto trip135 = std::make_shared<Trip>(135, route3, tram4, driver9, Time("19:30"), 2);
+        
+        auto trip136 = std::make_shared<Trip>(136, route4, trolleybus1, driver10, Time("07:15"), 2);
+        auto trip137 = std::make_shared<Trip>(137, route4, trolleybus2, driver11, Time("09:15"), 2);
+        auto trip138 = std::make_shared<Trip>(138, route4, trolleybus3, driver12, Time("11:15"), 2);
+        auto trip139 = std::make_shared<Trip>(139, route4, trolleybus1, driver10, Time("13:15"), 2);
+        auto trip140 = std::make_shared<Trip>(140, route4, trolleybus2, driver11, Time("15:15"), 2);
+        auto trip141 = std::make_shared<Trip>(141, route4, trolleybus3, driver12, Time("17:15"), 2);
+        
+        auto trip142 = std::make_shared<Trip>(142, route5, bus3, driver13, Time("08:15"), 2);
+        auto trip143 = std::make_shared<Trip>(143, route5, bus6, driver14, Time("10:15"), 2);
+        auto trip144 = std::make_shared<Trip>(144, route5, bus3, driver13, Time("12:15"), 2);
+        auto trip145 = std::make_shared<Trip>(145, route5, bus6, driver14, Time("14:15"), 2);
+        auto trip146 = std::make_shared<Trip>(146, route5, bus3, driver13, Time("16:15"), 2);
+        auto trip147 = std::make_shared<Trip>(147, route5, bus6, driver14, Time("18:15"), 2);
+        
+        auto trip148 = std::make_shared<Trip>(148, route6, tram2, driver15, Time("08:45"), 2);
+        auto trip149 = std::make_shared<Trip>(149, route6, tram4, driver7, Time("10:45"), 2);
+        auto trip150 = std::make_shared<Trip>(150, route6, tram2, driver15, Time("12:45"), 2);
+        auto trip151 = std::make_shared<Trip>(151, route6, tram4, driver7, Time("14:45"), 2);
+        auto trip152 = std::make_shared<Trip>(152, route6, tram2, driver15, Time("16:45"), 2);
+        
+        // Рейсы для среды (день 3)
+        auto trip153 = std::make_shared<Trip>(153, route1, bus1, driver1, Time("06:30"), 3);
+        auto trip154 = std::make_shared<Trip>(154, route1, bus2, driver2, Time("08:00"), 3);
+        auto trip155 = std::make_shared<Trip>(155, route1, bus3, driver3, Time("09:30"), 3);
+        auto trip156 = std::make_shared<Trip>(156, route1, bus1, driver1, Time("11:00"), 3);
+        auto trip157 = std::make_shared<Trip>(157, route1, bus2, driver2, Time("13:00"), 3);
+        auto trip158 = std::make_shared<Trip>(158, route1, bus3, driver3, Time("15:00"), 3);
+        auto trip159 = std::make_shared<Trip>(159, route1, bus1, driver1, Time("17:00"), 3);
+        auto trip160 = std::make_shared<Trip>(160, route1, bus2, driver2, Time("19:00"), 3);
+        
+        auto trip161 = std::make_shared<Trip>(161, route2, bus2, driver2, Time("07:00"), 3);
+        auto trip162 = std::make_shared<Trip>(162, route2, bus4, driver4, Time("08:30"), 3);
+        auto trip163 = std::make_shared<Trip>(163, route2, bus5, driver5, Time("10:00"), 3);
+        auto trip164 = std::make_shared<Trip>(164, route2, bus2, driver2, Time("12:00"), 3);
+        auto trip165 = std::make_shared<Trip>(165, route2, bus4, driver4, Time("14:00"), 3);
+        auto trip166 = std::make_shared<Trip>(166, route2, bus5, driver5, Time("16:00"), 3);
+        auto trip167 = std::make_shared<Trip>(167, route2, bus2, driver2, Time("18:00"), 3);
+        
+        auto trip168 = std::make_shared<Trip>(168, route3, tram1, driver6, Time("06:00"), 3);
+        auto trip169 = std::make_shared<Trip>(169, route3, tram2, driver7, Time("07:30"), 3);
+        auto trip170 = std::make_shared<Trip>(170, route3, tram3, driver8, Time("09:00"), 3);
+        auto trip171 = std::make_shared<Trip>(171, route3, tram1, driver6, Time("11:30"), 3);
+        auto trip172 = std::make_shared<Trip>(172, route3, tram2, driver7, Time("13:30"), 3);
+        auto trip173 = std::make_shared<Trip>(173, route3, tram3, driver8, Time("15:30"), 3);
+        auto trip174 = std::make_shared<Trip>(174, route3, tram1, driver6, Time("17:30"), 3);
+        auto trip175 = std::make_shared<Trip>(175, route3, tram4, driver9, Time("19:30"), 3);
+        
+        auto trip176 = std::make_shared<Trip>(176, route4, trolleybus1, driver10, Time("07:15"), 3);
+        auto trip177 = std::make_shared<Trip>(177, route4, trolleybus2, driver11, Time("09:15"), 3);
+        auto trip178 = std::make_shared<Trip>(178, route4, trolleybus3, driver12, Time("11:15"), 3);
+        auto trip179 = std::make_shared<Trip>(179, route4, trolleybus1, driver10, Time("13:15"), 3);
+        auto trip180 = std::make_shared<Trip>(180, route4, trolleybus2, driver11, Time("15:15"), 3);
+        auto trip181 = std::make_shared<Trip>(181, route4, trolleybus3, driver12, Time("17:15"), 3);
+        
+        auto trip182 = std::make_shared<Trip>(182, route5, bus3, driver13, Time("08:15"), 3);
+        auto trip183 = std::make_shared<Trip>(183, route5, bus6, driver14, Time("10:15"), 3);
+        auto trip184 = std::make_shared<Trip>(184, route5, bus3, driver13, Time("12:15"), 3);
+        auto trip185 = std::make_shared<Trip>(185, route5, bus6, driver14, Time("14:15"), 3);
+        auto trip186 = std::make_shared<Trip>(186, route5, bus3, driver13, Time("16:15"), 3);
+        auto trip187 = std::make_shared<Trip>(187, route5, bus6, driver14, Time("18:15"), 3);
+        
+        auto trip188 = std::make_shared<Trip>(188, route6, tram2, driver15, Time("08:45"), 3);
+        auto trip189 = std::make_shared<Trip>(189, route6, tram4, driver7, Time("10:45"), 3);
+        auto trip190 = std::make_shared<Trip>(190, route6, tram2, driver15, Time("12:45"), 3);
+        auto trip191 = std::make_shared<Trip>(191, route6, tram4, driver7, Time("14:45"), 3);
+        auto trip192 = std::make_shared<Trip>(192, route6, tram2, driver15, Time("16:45"), 3);
+        
+        // Рейсы для четверга (день 4)
+        auto trip193 = std::make_shared<Trip>(193, route1, bus1, driver1, Time("06:30"), 4);
+        auto trip194 = std::make_shared<Trip>(194, route1, bus2, driver2, Time("08:00"), 4);
+        auto trip195 = std::make_shared<Trip>(195, route1, bus3, driver3, Time("09:30"), 4);
+        auto trip196 = std::make_shared<Trip>(196, route1, bus1, driver1, Time("11:00"), 4);
+        auto trip197 = std::make_shared<Trip>(197, route1, bus2, driver2, Time("13:00"), 4);
+        auto trip198 = std::make_shared<Trip>(198, route1, bus3, driver3, Time("15:00"), 4);
+        auto trip199 = std::make_shared<Trip>(199, route1, bus1, driver1, Time("17:00"), 4);
+        auto trip200 = std::make_shared<Trip>(200, route1, bus2, driver2, Time("19:00"), 4);
+        
+        auto trip201 = std::make_shared<Trip>(201, route2, bus2, driver2, Time("07:00"), 4);
+        auto trip202 = std::make_shared<Trip>(202, route2, bus4, driver4, Time("08:30"), 4);
+        auto trip203 = std::make_shared<Trip>(203, route2, bus5, driver5, Time("10:00"), 4);
+        auto trip204 = std::make_shared<Trip>(204, route2, bus2, driver2, Time("12:00"), 4);
+        auto trip205 = std::make_shared<Trip>(205, route2, bus4, driver4, Time("14:00"), 4);
+        auto trip206 = std::make_shared<Trip>(206, route2, bus5, driver5, Time("16:00"), 4);
+        auto trip207 = std::make_shared<Trip>(207, route2, bus2, driver2, Time("18:00"), 4);
+        
+        auto trip208 = std::make_shared<Trip>(208, route3, tram1, driver6, Time("06:00"), 4);
+        auto trip209 = std::make_shared<Trip>(209, route3, tram2, driver7, Time("07:30"), 4);
+        auto trip210 = std::make_shared<Trip>(210, route3, tram3, driver8, Time("09:00"), 4);
+        auto trip211 = std::make_shared<Trip>(211, route3, tram1, driver6, Time("11:30"), 4);
+        auto trip212 = std::make_shared<Trip>(212, route3, tram2, driver7, Time("13:30"), 4);
+        auto trip213 = std::make_shared<Trip>(213, route3, tram3, driver8, Time("15:30"), 4);
+        auto trip214 = std::make_shared<Trip>(214, route3, tram1, driver6, Time("17:30"), 4);
+        auto trip215 = std::make_shared<Trip>(215, route3, tram4, driver9, Time("19:30"), 4);
+        
+        auto trip216 = std::make_shared<Trip>(216, route4, trolleybus1, driver10, Time("07:15"), 4);
+        auto trip217 = std::make_shared<Trip>(217, route4, trolleybus2, driver11, Time("09:15"), 4);
+        auto trip218 = std::make_shared<Trip>(218, route4, trolleybus3, driver12, Time("11:15"), 4);
+        auto trip219 = std::make_shared<Trip>(219, route4, trolleybus1, driver10, Time("13:15"), 4);
+        auto trip220 = std::make_shared<Trip>(220, route4, trolleybus2, driver11, Time("15:15"), 4);
+        auto trip221 = std::make_shared<Trip>(221, route4, trolleybus3, driver12, Time("17:15"), 4);
+        
+        auto trip222 = std::make_shared<Trip>(222, route5, bus3, driver13, Time("08:15"), 4);
+        auto trip223 = std::make_shared<Trip>(223, route5, bus6, driver14, Time("10:15"), 4);
+        auto trip224 = std::make_shared<Trip>(224, route5, bus3, driver13, Time("12:15"), 4);
+        auto trip225 = std::make_shared<Trip>(225, route5, bus6, driver14, Time("14:15"), 4);
+        auto trip226 = std::make_shared<Trip>(226, route5, bus3, driver13, Time("16:15"), 4);
+        auto trip227 = std::make_shared<Trip>(227, route5, bus6, driver14, Time("18:15"), 4);
+        
+        auto trip228 = std::make_shared<Trip>(228, route6, tram2, driver15, Time("08:45"), 4);
+        auto trip229 = std::make_shared<Trip>(229, route6, tram4, driver7, Time("10:45"), 4);
+        auto trip230 = std::make_shared<Trip>(230, route6, tram2, driver15, Time("12:45"), 4);
+        auto trip231 = std::make_shared<Trip>(231, route6, tram4, driver7, Time("14:45"), 4);
+        auto trip232 = std::make_shared<Trip>(232, route6, tram2, driver15, Time("16:45"), 4);
+        
+        // Рейсы для пятницы (день 5)
+        auto trip233 = std::make_shared<Trip>(233, route1, bus1, driver1, Time("06:30"), 5);
+        auto trip234 = std::make_shared<Trip>(234, route1, bus2, driver2, Time("08:00"), 5);
+        auto trip235 = std::make_shared<Trip>(235, route1, bus3, driver3, Time("09:30"), 5);
+        auto trip236 = std::make_shared<Trip>(236, route1, bus1, driver1, Time("11:00"), 5);
+        auto trip237 = std::make_shared<Trip>(237, route1, bus2, driver2, Time("13:00"), 5);
+        auto trip238 = std::make_shared<Trip>(238, route1, bus3, driver3, Time("15:00"), 5);
+        auto trip239 = std::make_shared<Trip>(239, route1, bus1, driver1, Time("17:00"), 5);
+        auto trip240 = std::make_shared<Trip>(240, route1, bus2, driver2, Time("19:00"), 5);
+        
+        auto trip241 = std::make_shared<Trip>(241, route2, bus2, driver2, Time("07:00"), 5);
+        auto trip242 = std::make_shared<Trip>(242, route2, bus4, driver4, Time("08:30"), 5);
+        auto trip243 = std::make_shared<Trip>(243, route2, bus5, driver5, Time("10:00"), 5);
+        auto trip244 = std::make_shared<Trip>(244, route2, bus2, driver2, Time("12:00"), 5);
+        auto trip245 = std::make_shared<Trip>(245, route2, bus4, driver4, Time("14:00"), 5);
+        auto trip246 = std::make_shared<Trip>(246, route2, bus5, driver5, Time("16:00"), 5);
+        auto trip247 = std::make_shared<Trip>(247, route2, bus2, driver2, Time("18:00"), 5);
+        
+        auto trip248 = std::make_shared<Trip>(248, route3, tram1, driver6, Time("06:00"), 5);
+        auto trip249 = std::make_shared<Trip>(249, route3, tram2, driver7, Time("07:30"), 5);
+        auto trip250 = std::make_shared<Trip>(250, route3, tram3, driver8, Time("09:00"), 5);
+        auto trip251 = std::make_shared<Trip>(251, route3, tram1, driver6, Time("11:30"), 5);
+        auto trip252 = std::make_shared<Trip>(252, route3, tram2, driver7, Time("13:30"), 5);
+        auto trip253 = std::make_shared<Trip>(253, route3, tram3, driver8, Time("15:30"), 5);
+        auto trip254 = std::make_shared<Trip>(254, route3, tram1, driver6, Time("17:30"), 5);
+        auto trip255 = std::make_shared<Trip>(255, route3, tram4, driver9, Time("19:30"), 5);
+        
+        auto trip256 = std::make_shared<Trip>(256, route4, trolleybus1, driver10, Time("07:15"), 5);
+        auto trip257 = std::make_shared<Trip>(257, route4, trolleybus2, driver11, Time("09:15"), 5);
+        auto trip258 = std::make_shared<Trip>(258, route4, trolleybus3, driver12, Time("11:15"), 5);
+        auto trip259 = std::make_shared<Trip>(259, route4, trolleybus1, driver10, Time("13:15"), 5);
+        auto trip260 = std::make_shared<Trip>(260, route4, trolleybus2, driver11, Time("15:15"), 5);
+        auto trip261 = std::make_shared<Trip>(261, route4, trolleybus3, driver12, Time("17:15"), 5);
+        
+        auto trip262 = std::make_shared<Trip>(262, route5, bus3, driver13, Time("08:15"), 5);
+        auto trip263 = std::make_shared<Trip>(263, route5, bus6, driver14, Time("10:15"), 5);
+        auto trip264 = std::make_shared<Trip>(264, route5, bus3, driver13, Time("12:15"), 5);
+        auto trip265 = std::make_shared<Trip>(265, route5, bus6, driver14, Time("14:15"), 5);
+        auto trip266 = std::make_shared<Trip>(266, route5, bus3, driver13, Time("16:15"), 5);
+        auto trip267 = std::make_shared<Trip>(267, route5, bus6, driver14, Time("18:15"), 5);
+        
+        auto trip268 = std::make_shared<Trip>(268, route6, tram2, driver15, Time("08:45"), 5);
+        auto trip269 = std::make_shared<Trip>(269, route6, tram4, driver7, Time("10:45"), 5);
+        auto trip270 = std::make_shared<Trip>(270, route6, tram2, driver15, Time("12:45"), 5);
+        auto trip271 = std::make_shared<Trip>(271, route6, tram4, driver7, Time("14:45"), 5);
+        auto trip272 = std::make_shared<Trip>(272, route6, tram2, driver15, Time("16:45"), 5);
 
         // Добавляем все рейсы в систему
         system.addTripDirect(trip1);
@@ -707,10 +896,170 @@ void initializeTestData(TransportSystem& system) {
         system.addTripDirect(trip110);
         system.addTripDirect(trip111);
         system.addTripDirect(trip112);
+        system.addTripDirect(trip113);
+        system.addTripDirect(trip114);
+        system.addTripDirect(trip115);
+        system.addTripDirect(trip116);
+        system.addTripDirect(trip117);
+        system.addTripDirect(trip118);
+        system.addTripDirect(trip119);
+        system.addTripDirect(trip120);
+        system.addTripDirect(trip121);
+        system.addTripDirect(trip122);
+        system.addTripDirect(trip123);
+        system.addTripDirect(trip124);
+        system.addTripDirect(trip125);
+        system.addTripDirect(trip126);
+        system.addTripDirect(trip127);
+        system.addTripDirect(trip128);
+        system.addTripDirect(trip129);
+        system.addTripDirect(trip130);
+        system.addTripDirect(trip131);
+        system.addTripDirect(trip132);
+        system.addTripDirect(trip133);
+        system.addTripDirect(trip134);
+        system.addTripDirect(trip135);
+        system.addTripDirect(trip136);
+        system.addTripDirect(trip137);
+        system.addTripDirect(trip138);
+        system.addTripDirect(trip139);
+        system.addTripDirect(trip140);
+        system.addTripDirect(trip141);
+        system.addTripDirect(trip142);
+        system.addTripDirect(trip143);
+        system.addTripDirect(trip144);
+        system.addTripDirect(trip145);
+        system.addTripDirect(trip146);
+        system.addTripDirect(trip147);
+        system.addTripDirect(trip148);
+        system.addTripDirect(trip149);
+        system.addTripDirect(trip150);
+        system.addTripDirect(trip151);
+        system.addTripDirect(trip152);
+        system.addTripDirect(trip153);
+        system.addTripDirect(trip154);
+        system.addTripDirect(trip155);
+        system.addTripDirect(trip156);
+        system.addTripDirect(trip157);
+        system.addTripDirect(trip158);
+        system.addTripDirect(trip159);
+        system.addTripDirect(trip160);
+        system.addTripDirect(trip161);
+        system.addTripDirect(trip162);
+        system.addTripDirect(trip163);
+        system.addTripDirect(trip164);
+        system.addTripDirect(trip165);
+        system.addTripDirect(trip166);
+        system.addTripDirect(trip167);
+        system.addTripDirect(trip168);
+        system.addTripDirect(trip169);
+        system.addTripDirect(trip170);
+        system.addTripDirect(trip171);
+        system.addTripDirect(trip172);
+        system.addTripDirect(trip173);
+        system.addTripDirect(trip174);
+        system.addTripDirect(trip175);
+        system.addTripDirect(trip176);
+        system.addTripDirect(trip177);
+        system.addTripDirect(trip178);
+        system.addTripDirect(trip179);
+        system.addTripDirect(trip180);
+        system.addTripDirect(trip181);
+        system.addTripDirect(trip182);
+        system.addTripDirect(trip183);
+        system.addTripDirect(trip184);
+        system.addTripDirect(trip185);
+        system.addTripDirect(trip186);
+        system.addTripDirect(trip187);
+        system.addTripDirect(trip188);
+        system.addTripDirect(trip189);
+        system.addTripDirect(trip190);
+        system.addTripDirect(trip191);
+        system.addTripDirect(trip192);
+        system.addTripDirect(trip193);
+        system.addTripDirect(trip194);
+        system.addTripDirect(trip195);
+        system.addTripDirect(trip196);
+        system.addTripDirect(trip197);
+        system.addTripDirect(trip198);
+        system.addTripDirect(trip199);
+        system.addTripDirect(trip200);
+        system.addTripDirect(trip201);
+        system.addTripDirect(trip202);
+        system.addTripDirect(trip203);
+        system.addTripDirect(trip204);
+        system.addTripDirect(trip205);
+        system.addTripDirect(trip206);
+        system.addTripDirect(trip207);
+        system.addTripDirect(trip208);
+        system.addTripDirect(trip209);
+        system.addTripDirect(trip210);
+        system.addTripDirect(trip211);
+        system.addTripDirect(trip212);
+        system.addTripDirect(trip213);
+        system.addTripDirect(trip214);
+        system.addTripDirect(trip215);
+        system.addTripDirect(trip216);
+        system.addTripDirect(trip217);
+        system.addTripDirect(trip218);
+        system.addTripDirect(trip219);
+        system.addTripDirect(trip220);
+        system.addTripDirect(trip221);
+        system.addTripDirect(trip222);
+        system.addTripDirect(trip223);
+        system.addTripDirect(trip224);
+        system.addTripDirect(trip225);
+        system.addTripDirect(trip226);
+        system.addTripDirect(trip227);
+        system.addTripDirect(trip228);
+        system.addTripDirect(trip229);
+        system.addTripDirect(trip230);
+        system.addTripDirect(trip231);
+        system.addTripDirect(trip232);
+        system.addTripDirect(trip233);
+        system.addTripDirect(trip234);
+        system.addTripDirect(trip235);
+        system.addTripDirect(trip236);
+        system.addTripDirect(trip237);
+        system.addTripDirect(trip238);
+        system.addTripDirect(trip239);
+        system.addTripDirect(trip240);
+        system.addTripDirect(trip241);
+        system.addTripDirect(trip242);
+        system.addTripDirect(trip243);
+        system.addTripDirect(trip244);
+        system.addTripDirect(trip245);
+        system.addTripDirect(trip246);
+        system.addTripDirect(trip247);
+        system.addTripDirect(trip248);
+        system.addTripDirect(trip249);
+        system.addTripDirect(trip250);
+        system.addTripDirect(trip251);
+        system.addTripDirect(trip252);
+        system.addTripDirect(trip253);
+        system.addTripDirect(trip254);
+        system.addTripDirect(trip255);
+        system.addTripDirect(trip256);
+        system.addTripDirect(trip257);
+        system.addTripDirect(trip258);
+        system.addTripDirect(trip259);
+        system.addTripDirect(trip260);
+        system.addTripDirect(trip261);
+        system.addTripDirect(trip262);
+        system.addTripDirect(trip263);
+        system.addTripDirect(trip264);
+        system.addTripDirect(trip265);
+        system.addTripDirect(trip266);
+        system.addTripDirect(trip267);
+        system.addTripDirect(trip268);
+        system.addTripDirect(trip269);
+        system.addTripDirect(trip270);
+        system.addTripDirect(trip271);
+        system.addTripDirect(trip272);
 
         // Рассчитываем время прибытия для всех рейсов
         // Скорости: автобусы ~30 км/ч, трамваи ~25 км/ч, троллейбусы ~28 км/ч
-        for (int i = 1; i <= 112; i++) {
+        for (int i = 1; i <= 272; i++) {
             auto trip = system.getTripById(i);
             if (trip) {
                 std::string vehicleType = trip->getRoute()->getVehicleType();
@@ -741,9 +1090,11 @@ void searchRoutes(TransportSystem& system) {
         std::string stopB = getStopNameByInput(system, stopBInput);
 
         auto routes = system.findRoutes(stopA, stopB);
-        std::cout << "\nНайдено прямых маршрутов: " << routes.size() << '\n';
+        std::cout << "\nНайдено маршрутов: " << routes.size() << '\n';
 
-        if (!routes.empty()) {
+        if (routes.empty()) {
+            std::cout << "Прямых маршрутов не найдено. Попробуйте поиск с пересадками.\n";
+        } else {
             for (const auto& route : routes) {
                 std::cout << "\nМаршрут " << route->getNumber() << " ("
                           << route->getVehicleType() << ")\n";
@@ -761,105 +1112,12 @@ void searchRoutes(TransportSystem& system) {
                 }
             }
         }
-
-        // Если прямых маршрутов нет, автоматически ищем маршруты с пересадками
-        if (routes.empty()) {
-            std::cout << "\nПрямых маршрутов не найдено. Ищем маршруты с пересадками...\n";
-            
-            try {
-                auto& planner = system.getJourneyPlanner();
-                auto journeys = planner.findAllJourneysWithTransfers(stopA, stopB, 2);
-                
-                if (journeys.empty()) {
-                    std::cout << "Маршрутов с пересадками не найдено.\n";
-                } else {
-                    // Фильтруем уникальные варианты по комбинации маршрутов и точек пересадки
-                    std::vector<Journey> uniqueJourneys;
-                    std::set<std::string> seenRoutes;
-                    
-                    for (const auto& journey : journeys) {
-                        // Создаем уникальный ключ: последовательность номеров маршрутов + точки пересадки
-                        std::string routeKey;
-                        const auto& trips = journey.getTrips();
-                        const auto& transferPoints = journey.getTransferPoints();
-                        
-                        for (size_t i = 0; i < trips.size(); ++i) {
-                            routeKey += std::to_string(trips[i]->getRoute()->getNumber());
-                            if (i < transferPoints.size()) {
-                                routeKey += "@" + transferPoints[i] + "@";
-                            }
-                        }
-                        
-                        // Добавляем только если такой комбинации еще не было
-                        if (seenRoutes.find(routeKey) == seenRoutes.end()) {
-                            seenRoutes.insert(routeKey);
-                            uniqueJourneys.push_back(journey);
-                        }
-                    }
-                    
-                    if (uniqueJourneys.empty()) {
-                        std::cout << "Маршрутов с пересадками не найдено.\n";
-                    } else {
-                        std::cout << "\n========================================\n";
-                        
-                        // Показываем до 5 уникальных вариантов
-                        int count = std::min(5, static_cast<int>(uniqueJourneys.size()));
-                        for (int i = 0; i < count; ++i) {
-                            std::cout << "\n--- Вариант " << (i + 1) << " ---\n";
-                            const auto& journey = uniqueJourneys[i];
-                            
-                            std::cout << "Пересадок: " << journey.getTransferCount() << "\n";
-                            std::cout << "Общее время в пути: " << journey.getTotalDuration() << " минут\n";
-                            std::cout << "Время отправления: " << journey.getStartTime() << "\n";
-                            std::cout << "Время прибытия: " << journey.getEndTime() << "\n";
-                            
-                            const auto& trips = journey.getTrips();
-                            const auto& transferPoints = journey.getTransferPoints();
-                            
-                            std::cout << "\nПуть:\n";
-                            std::cout << "  " << stopA;
-                            
-                            for (size_t j = 0; j < trips.size(); ++j) {
-                                const auto& trip = trips[j];
-                                const auto& route = trip->getRoute();
-                                const auto& routeStops = route->getAllStops();
-                                
-                                // Определяем начальную и конечную остановки для этого участка
-                                std::string segmentStart = (j == 0) ? stopA : transferPoints[j - 1];
-                                std::string segmentEnd = (j < transferPoints.size()) ? transferPoints[j] : stopB;
-                                
-                                int startPos = route->getStopPosition(segmentStart);
-                                int endPos = route->getStopPosition(segmentEnd);
-                                
-                                if (startPos != -1 && endPos != -1 && startPos < endPos) {
-                                    for (int k = startPos + 1; k <= endPos; ++k) {
-                                        std::cout << " → " << routeStops[k];
-                                    }
-                                }
-                                
-                                std::cout << " [Маршрут " << route->getNumber() 
-                                          << " (" << route->getVehicleType() << ")]";
-                                
-                                if (j < transferPoints.size()) {
-                                    std::cout << "\n  Пересадка на остановке: " << transferPoints[j];
-                                    std::cout << "\n  " << transferPoints[j];
-                                }
-                            }
-                            std::cout << "\n";
-                        }
-                        std::cout << "========================================\n";
-                    }
-                }
-            } catch (const std::exception& e) {
-                std::cout << "Ошибка при поиске маршрутов с пересадками: " << e.what() << "\n";
-            }
-        }
     } catch (const std::exception& e) {
         std::cout << "Ошибка: " << e.what() << "\n";
     }
 }
 
-void viewStopTimetableGuest(TransportSystem& system) {
+void viewStopTimetable(TransportSystem& system) {
     try {
         displayAllStopsForSelection(system);
 
@@ -868,59 +1126,73 @@ void viewStopTimetableGuest(TransportSystem& system) {
         std::getline(std::cin, stopInput);
 
         std::string stopName = getStopNameByInput(system, stopInput);
-        system.getStopTimetableAll(stopName);
-    } catch (const std::exception& e) {
-        std::cout << "Ошибка: " << e.what() << '\n';
-    }
-}
 
-void viewStopTimetableAdmin(TransportSystem& system) {
-    try {
-        displayAllStopsForSelection(system);
+        std::cout << "\n=== ВЫБОР ДНЯ НЕДЕЛИ ===\n";
+        std::cout << "1. Понедельник\n";
+        std::cout << "2. Вторник\n";
+        std::cout << "3. Среда\n";
+        std::cout << "4. Четверг\n";
+        std::cout << "5. Пятница\n";
+        std::cout << "6. Суббота\n";
+        std::cout << "7. Воскресенье\n";
+        std::cout << "Выберите день недели: ";
 
-        std::string stopInput;
-        std::cout << "\nВведите остановку (ID или название): ";
-        std::getline(std::cin, stopInput);
+        int weekDayChoice;
+        if (!(std::cin >> weekDayChoice)) {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            throw InputException("Неверный формат ввода для дня недели");
+        }
+        std::cin.ignore();
 
-        std::string stopName = getStopNameByInput(system, stopInput);
-        
+        if (weekDayChoice < 1 || weekDayChoice > 7) {
+            throw InputException("Неверный выбор дня недели. Допустимые значения: 1-7");
+        }
+
         const auto& trips = system.getTrips();
-        std::vector<std::pair<int, std::pair<int, Time>>> relevantTrips; // tripId, routeNumber, time
+        std::vector<std::pair<int, Time>> relevantTrips;
 
         for (const auto& trip : trips) {
             if (trip->hasStop(stopName)) {
-                Time arrivalTime = trip->getArrivalTime(stopName);
-                relevantTrips.push_back({trip->getTripId(), {trip->getRoute()->getNumber(), arrivalTime}});
+                int tripDay = trip->getWeekDay();
+                bool dayMatches = false;
+                if (weekDayChoice >= 1 && weekDayChoice <= 5) {
+                    dayMatches = (tripDay >= 1 && tripDay <= 5);
+                } else {
+                    dayMatches = (tripDay == weekDayChoice);
+                }
+                if (dayMatches) {
+                    Time arrivalTime = trip->getArrivalTime(stopName);
+                    relevantTrips.push_back({trip->getTripId(), arrivalTime});
+                }
             }
         }
 
         std::sort(relevantTrips.begin(), relevantTrips.end(),
-                  [](const auto& a, const auto& b) { return a.second.second < b.second.second; });
+                  [](const auto& a, const auto& b) { return a.second < b.second; });
 
-        std::cout << "\nРасписание для остановки '" << stopName << "':\n";
+        std::string dayNames[] = {"", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"};
+        std::cout << "\n=== РАСПИСАНИЕ ДЛЯ ОСТАНОВКИ '" << stopName << "' ===\n";
+        std::cout << "День недели: " << dayNames[weekDayChoice] << "\n";
+        std::cout << "----------------------------------------\n";
+
         if (relevantTrips.empty()) {
             std::cout << "Рейсов не найдено.\n";
         } else {
-            for (const auto& [tripId, routeTime] : relevantTrips) {
-                auto tripIt = std::find_if(trips.begin(), trips.end(),
-                                          [tripId](const auto& t) { return t->getTripId() == tripId; });
-                if (tripIt != trips.end()) {
-                    auto trip = *tripIt;
-                    std::cout << trip->getRoute()->getVehicleType() << " " << routeTime.first << " - прибытие в " << routeTime.second
-                              << " | Транспорт: " << trip->getVehicle()->getInfo()
-                              << " | Водитель: " << trip->getDriver()->getFullName() << '\n';
-                } else {
-                    std::cout << "Маршрут " << routeTime.first << " - прибытие в " << routeTime.second << '\n';
+            for (const auto& [tripId, time] : relevantTrips) {
+                auto trip = system.getTripById(tripId);
+                if (trip) {
+                    std::cout << "Рейс " << tripId << " | Маршрут " << trip->getRoute()->getNumber() 
+                              << " | Отправление: " << trip->getStartTime() 
+                              << " | Прибытие: " << time << "\n";
                 }
             }
         }
+        std::cout << "========================================\n";
+
     } catch (const std::exception& e) {
         std::cout << "Ошибка: " << e.what() << '\n';
     }
-}
-
-void viewStopTimetable(TransportSystem& system) {
-    viewStopTimetableAdmin(system);
 }
 
 void viewTransportScheduleGuest(TransportSystem& system) {
@@ -948,50 +1220,6 @@ void viewTransportScheduleGuest(TransportSystem& system) {
                 throw InputException("Неверный выбор типа транспорта. Допустимые значения: 1-3");
         }
 
-        // Получаем маршруты выбранного типа
-        const auto& routes = system.getRoutes();
-        std::vector<std::shared_ptr<Route>> filteredRoutes;
-        for (const auto& route : routes) {
-            if (route->getVehicleType() == selectedType) {
-                filteredRoutes.push_back(route);
-            }
-        }
-
-        if (filteredRoutes.empty()) {
-            std::cout << "\nМаршрутов типа '" << selectedType << "' не найдено.\n";
-            return;
-        }
-
-        // Показываем список маршрутов
-        std::cout << "\n=== ДОСТУПНЫЕ МАРШРУТЫ (" << selectedType << ") ===\n";
-        for (size_t i = 0; i < filteredRoutes.size(); ++i) {
-            std::cout << (i + 1) << ". Маршрут " << filteredRoutes[i]->getNumber()
-                      << ": " << filteredRoutes[i]->getStartStop()
-                      << " → " << filteredRoutes[i]->getEndStop() << "\n";
-        }
-        std::cout << "0. Назад\n";
-        std::cout << "Выберите маршрут: ";
-
-        int routeChoice;
-        if (!(std::cin >> routeChoice)) {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            throw InputException("Неверный формат ввода для выбора маршрута");
-        }
-        std::cin.ignore();
-
-        if (routeChoice == 0) {
-            return;
-        }
-
-        if (routeChoice < 1 || routeChoice > static_cast<int>(filteredRoutes.size())) {
-            throw InputException("Неверный выбор маршрута. Допустимые значения: 0-" +
-                                std::to_string(filteredRoutes.size()));
-        }
-
-        auto selectedRoute = filteredRoutes[routeChoice - 1];
-
-        // Выбор дня недели
         std::cout << "\n=== ВЫБОР ДНЯ НЕДЕЛИ ===\n";
         std::cout << "1. Понедельник\n";
         std::cout << "2. Вторник\n";
@@ -1000,7 +1228,6 @@ void viewTransportScheduleGuest(TransportSystem& system) {
         std::cout << "5. Пятница\n";
         std::cout << "6. Суббота\n";
         std::cout << "7. Воскресенье\n";
-        std::cout << "0. Назад\n";
         std::cout << "Выберите день недели: ";
 
         int weekDayChoice;
@@ -1011,31 +1238,22 @@ void viewTransportScheduleGuest(TransportSystem& system) {
         }
         std::cin.ignore();
 
-        if (weekDayChoice == 0) {
-            return;
-        }
-
         if (weekDayChoice < 1 || weekDayChoice > 7) {
-            throw InputException("Неверный выбор дня недели. Допустимые значения: 0-7");
+            throw InputException("Неверный выбор дня недели. Допустимые значения: 1-7");
         }
 
-        // Получаем рейсы для выбранного маршрута и дня недели
         const auto& trips = system.getTrips();
         std::vector<std::shared_ptr<Trip>> filteredTrips;
         
         for (const auto& trip : trips) {
-            if (trip->getRoute()->getNumber() == selectedRoute->getNumber() &&
-                trip->getRoute()->getVehicleType() == selectedType) {
+            if (trip->getRoute()->getVehicleType() == selectedType) {
                 int tripDay = trip->getWeekDay();
                 bool dayMatches = false;
                 if (weekDayChoice >= 1 && weekDayChoice <= 5) {
-                    // Будни: показываем все будни (1-5)
                     dayMatches = (tripDay >= 1 && tripDay <= 5);
                 } else {
-                    // Выходные: показываем конкретный день
                     dayMatches = (tripDay == weekDayChoice);
                 }
-                
                 if (dayMatches) {
                     filteredTrips.push_back(trip);
                 }
@@ -1043,36 +1261,26 @@ void viewTransportScheduleGuest(TransportSystem& system) {
         }
 
         if (filteredTrips.empty()) {
-            std::string dayNames[] = {"", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"};
-            std::cout << "\nРейсов для маршрута " << selectedRoute->getNumber() 
-                      << " на " << dayNames[weekDayChoice] << " не найдено.\n";
+            std::cout << "\nРейсов типа '" << selectedType << "' не найдено для выбранного дня.\n";
             return;
         }
 
-        // Сортируем рейсы по времени отправления
-        std::sort(filteredTrips.begin(), filteredTrips.end(),
-                  [](const auto& a, const auto& b) { return a->getStartTime() < b->getStartTime(); });
-
         std::string dayNames[] = {"", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"};
         
-        std::cout << "\n=== РАСПИСАНИЕ МАРШРУТА " << selectedRoute->getNumber() << " ===\n";
-        std::cout << "Тип транспорта: " << selectedType << "\n";
+        std::cout << "\n=== РАСПИСАНИЕ ТРАНСПОРТА: " << selectedType << " ===\n";
         std::cout << "День недели: " << dayNames[weekDayChoice] << "\n";
-        std::cout << "Маршрут: " << selectedRoute->getStartStop() 
-                  << " → " << selectedRoute->getEndStop() << "\n";
         std::cout << "========================================\n";
 
         for (const auto& trip : filteredTrips) {
-            std::cout << "\nРейс " << trip->getTripId() << " (отправление: " << trip->getStartTime() << "):\n";
+            std::cout << "\nРейс " << trip->getTripId() << ":\n";
+            std::cout << "  Маршрут: " << trip->getRoute()->getNumber() << "\n";
+            std::cout << "  Время отправления: " << trip->getStartTime() << "\n";
             
             const auto& schedule = trip->getSchedule();
             if (!schedule.empty()) {
-                // Преобразуем map в vector и сортируем по времени
-                std::vector<std::pair<std::string, Time>> sortedSchedule(schedule.begin(), schedule.end());
-                std::sort(sortedSchedule.begin(), sortedSchedule.end(),
-                          [](const auto& a, const auto& b) { return a.second < b.second; });
-                for (const auto& [stop, time] : sortedSchedule) {
-                    std::cout << "  " << stop << " - " << time << "\n";
+                std::cout << "  Расписание:\n";
+                for (const auto& [stop, time] : schedule) {
+                    std::cout << "    " << stop << " - " << time << "\n";
                 }
             } else {
                 std::cout << "  Расписание: не рассчитано\n";
@@ -1264,7 +1472,6 @@ void viewTransportSchedule(TransportSystem& system) {
         std::string dayNames[] = {"", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"};
         std::cout << "\n=== РАСПИСАНИЕ ДЛЯ ОСТАНОВКИ '" << selectedStop << "' ===\n";
         std::cout << "Маршрут: " << selectedRoute->getNumber() << " (" << selectedType << ")\n";
-        std::cout << "Направление: " << (directionChoice == 1 ? "Прямое" : "Обратное") << "\n";
         std::cout << "День недели: " << dayNames[weekDayChoice] << "\n";
         std::cout << "----------------------------------------\n";
 
@@ -1272,16 +1479,11 @@ void viewTransportSchedule(TransportSystem& system) {
             std::cout << "Рейсов не найдено для этой остановки.\n";
         } else {
             for (const auto& [tripId, time] : stopTimes) {
-                // Находим рейс для вывода дополнительной информации
-                auto tripIt = std::find_if(trips.begin(), trips.end(),
-                                          [tripId](const auto& t) { return t->getTripId() == tripId; });
-                if (tripIt != trips.end()) {
-                    auto trip = *tripIt;
-                    std::cout << "Рейс " << tripId << " - прибытие в " << time
-                              << " | Транспорт: " << trip->getVehicle()->getInfo()
-                              << " | Водитель: " << trip->getDriver()->getFullName() << "\n";
-                } else {
-                    std::cout << "Рейс " << tripId << " - прибытие в " << time << "\n";
+                auto trip = system.getTripById(tripId);
+                if (trip) {
+                    std::cout << "Рейс " << tripId << " | Маршрут " << trip->getRoute()->getNumber() 
+                              << " | Отправление: " << trip->getStartTime() 
+                              << " | Прибытие: " << time << "\n";
                 }
             }
         }
@@ -1335,11 +1537,7 @@ void calculateArrivalTime(TransportSystem& system) {
             auto trip = *tripIt;
             std::cout << "\nОбновленное расписание для рейса " << tripId << ":\n";
             const auto& schedule = trip->getSchedule();
-            // Преобразуем map в vector и сортируем по времени
-            std::vector<std::pair<std::string, Time>> sortedSchedule(schedule.begin(), schedule.end());
-            std::sort(sortedSchedule.begin(), sortedSchedule.end(),
-                      [](const auto& a, const auto& b) { return a.second < b.second; });
-            for (const auto& [stop, time] : sortedSchedule) {
+            for (const auto& [stop, time] : schedule) {
                 std::cout << "  " << stop << " - " << time << '\n';
             }
         }
@@ -1354,13 +1552,13 @@ void showAllTrips(const TransportSystem& system) {
         std::cout << "\nВ системе нет рейсов.\n";
         return;
     }
+    std::string dayNames[] = {"", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"};
     std::cout << "\nВсе рейсы в системе:\n";
     for (const auto& trip : trips) {
         std::cout << "Рейс " << trip->getTripId()
-                  << ": Маршрут " << trip->getRoute()->getNumber()
-                  << ", отправление: " << trip->getStartTime()
-                  << ", водитель: " << trip->getDriver()->getFullName()
-                  << ", транспорт: " << trip->getVehicle()->getLicensePlate() << '\n';
+                  << " | Маршрут " << trip->getRoute()->getNumber()
+                  << " | День: " << dayNames[trip->getWeekDay()]
+                  << " | Отправление: " << trip->getStartTime() << '\n';
     }
 }
 
@@ -1382,7 +1580,7 @@ void runGuestMode(TransportSystem& system) {
             switch (choice) {
                 case 0: running = false; break;
                 case 1: viewTransportScheduleGuest(system); break;
-                case 2: viewStopTimetableGuest(system); break;
+                case 2: viewStopTimetable(system); break;
                 case 3: searchRoutes(system); break;
                 default: std::cout << "Неверный выбор.\n";
             }
@@ -1431,7 +1629,7 @@ void runAdminMode(TransportSystem& system) {
         try {
             switch (choice) {
                 case 1: viewTransportSchedule(system); break;
-                case 2: viewStopTimetableAdmin(system); break;
+                case 2: viewStopTimetable(system); break;
                 case 3: searchRoutes(system); break;
                 case 4: calculateArrivalTime(system); break;
                 case 5: adminAddRoute(system); break;
@@ -1478,13 +1676,13 @@ void runAdminMode(TransportSystem& system) {
                         break;
                     }
                     
+                    std::string dayNames[] = {"", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"};
                     std::cout << "\n=== ДОСТУПНЫЕ РЕЙСЫ ДЛЯ УДАЛЕНИЯ ===\n";
                     for (size_t i = 0; i < trips.size(); ++i) {
                         std::cout << (i + 1) << ". Рейс " << trips[i]->getTripId()
-                                  << ": Маршрут " << trips[i]->getRoute()->getNumber()
-                                  << ", отправление: " << trips[i]->getStartTime()
-                                  << ", водитель: " << trips[i]->getDriver()->getFullName()
-                                  << ", транспорт: " << trips[i]->getVehicle()->getLicensePlate() << "\n";
+                                  << " | Маршрут " << trips[i]->getRoute()->getNumber()
+                                  << " | День: " << dayNames[trips[i]->getWeekDay()]
+                                  << " | Отправление: " << trips[i]->getStartTime() << "\n";
                     }
                     std::cout << "=====================================\n";
                     std::cout << "Выберите номер рейса для удаления: ";
@@ -1510,7 +1708,6 @@ void runAdminMode(TransportSystem& system) {
                     system.displayAllTrips();
                     system.displayAllVehicles();
                     system.displayAllStops();
-                    system.displayAllDrivers();
                     break;
                 }
                 case 13: system.saveData(); break;

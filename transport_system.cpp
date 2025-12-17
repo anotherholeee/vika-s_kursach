@@ -23,8 +23,24 @@ void TransportSystem::undo() {
     std::cout << "Действие отменено.\n";
 }
 
+bool TransportSystem::canRedo() const {
+    return commandHistory.canRedo();
+}
+
+void TransportSystem::redo() {
+    if (!canRedo()) {
+        throw ContainerException("Нет действий для повтора");
+    }
+    commandHistory.redo();
+    std::cout << "Действие повторено.\n";
+}
+
 std::string TransportSystem::getLastCommandDescription() const {
     return commandHistory.getLastCommandDescription();
+}
+
+std::string TransportSystem::getNextCommandDescription() const {
+    return commandHistory.getNextCommandDescription();
 }
 
 bool TransportSystem::authenticateAdmin(const std::string& username, const std::string& password) {
@@ -90,12 +106,12 @@ void TransportSystem::getStopTimetable(int stopId, const Time& startTime, const 
 }
 
 void TransportSystem::getStopTimetableAll(const std::string& stopName) {
-    std::vector<std::pair<std::pair<int, std::string>, Time>> relevantTrips; // routeNumber, vehicleType, time
+    std::vector<std::pair<int, Time>> relevantTrips;
 
     for (const auto& trip : trips) {
         if (trip->hasStop(stopName)) {
             Time arrivalTime = trip->getArrivalTime(stopName);
-            relevantTrips.push_back({{trip->getRoute()->getNumber(), trip->getRoute()->getVehicleType()}, arrivalTime});
+            relevantTrips.push_back({trip->getRoute()->getNumber(), arrivalTime});
         }
     }
 
@@ -107,7 +123,7 @@ void TransportSystem::getStopTimetableAll(const std::string& stopName) {
         std::cout << "Рейсов не найдено.\n";
     } else {
         for (const auto& trip : relevantTrips) {
-            std::cout << trip.first.second << " " << trip.first.first << " - прибытие в " << trip.second << '\n';
+            std::cout << "Маршрут " << trip.first << " - прибытие в " << trip.second << '\n';
         }
     }
 }
@@ -241,13 +257,6 @@ void TransportSystem::displayAllStops() const {
     std::cout << "\n=== ВСЕ ОСТАНОВКИ ===\n";
     for (const auto& stop : stops) {
         std::cout << "ID: " << stop.getId() << " - " << stop.getName() << '\n';
-    }
-}
-
-void TransportSystem::displayAllDrivers() const {
-    std::cout << "\n=== ВСЕ ВОДИТЕЛИ ===\n";
-    for (const auto& driver : drivers) {
-        std::cout << driver->getFullName() << '\n';
     }
 }
 

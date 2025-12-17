@@ -16,7 +16,7 @@ public:
 
     virtual ~Vehicle() = default;
 
-    virtual std::string getInfo() const;
+    std::string getInfo() const;
     std::string getType() const;
     std::string getModel() const;
     std::string getLicensePlate() const;

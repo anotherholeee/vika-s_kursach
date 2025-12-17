@@ -84,17 +84,17 @@ class ElectricTransport {
 
 class Bus {
     + Bus(m : string, lp : string, cap : int, fuel : string)
-    + ~Bus()
+    + {virtual} ~Bus()
 }
 
 class Tram {
     + Tram(m : string, lp : string, cap : int, volt : double)
-    + ~Tram()
+    + {virtual} ~Tram()
 }
 
 class Trolleybus {
     + Trolleybus(m : string, lp : string, cap : int, volt : double)
-    + ~Trolleybus()
+    + {virtual} ~Trolleybus()
 }
 
 ' Классы данных
@@ -102,12 +102,16 @@ class Driver {
     - firstName : string
     - lastName : string
     - middleName : string
-    + Driver(fname : string, lname : string, mname : string)
+    - category : string
+    + Driver(fname : string, lname : string, mname : string, cat : string)
+    + ~Driver()
     + getFullName() : string
     + getFirstName() : string
     + getLastName() : string
     + getMiddleName() : string
-    + ==(other : Driver) : bool
+    + getCategory() : string
+    + setCategory(cat : string) : void
+    + operator==(other : Driver) : bool
     + serialize() : string
     + {static} deserialize(data : string) : shared_ptr<Driver>
 }
@@ -116,9 +120,10 @@ class Stop {
     - id : int
     - name : string
     + Stop(stopId : int, stopName : string)
+    + ~Stop()
     + getId() : int
     + getName() : string
-    + ==(other : Stop) : bool
+    + operator==(other : Stop) : bool
     + serialize() : string
     + {static} deserialize(data : string) : Stop
 }
@@ -128,20 +133,21 @@ class Time {
     - minutes : int
     + Time(h : int, m : int)
     + Time(timeStr : string)
+    + ~Time()
     + getTotalMinutes() : int
     + getHours() : int
     + getMinutes() : int
-    + <(other : Time) : bool
-    + <=(other : Time) : bool
-    + >(other : Time) : bool
-    + >=(other : Time) : bool
-    + ==(other : Time) : bool
-    + !=(other : Time) : bool
-    + +(minutesToAdd : int) : Time
-    + -(minutesToSubtract : int) : Time
-    + -(other : Time) : int
-    + {friend} <<(os : ostream&, time : Time) : ostream&
-    + {friend} >>(is : istream&, time : Time&) : istream&
+    + operator<(other : Time) : bool
+    + operator<=(other : Time) : bool
+    + operator>(other : Time) : bool
+    + operator>=(other : Time) : bool
+    + operator==(other : Time) : bool
+    + operator!=(other : Time) : bool
+    + operator+(minutesToAdd : int) : Time
+    + operator-(minutesToSubtract : int) : Time
+    + operator-(other : Time) : int
+    + {friend} operator<<(os : ostream&, time : Time) : ostream&
+    + {friend} operator>>(is : istream&, time : Time&) : istream&
     + serialize() : string
     + {static} deserialize(data : string) : Time
 }
@@ -154,6 +160,7 @@ class Route {
     - allStops : vector<string>
     - weekDays : set<int>
     + Route(num : int, vType : string, stops : vector<string>, days : set<int>)
+    + ~Route()
     + containsStop(stop : string) : bool
     + getStopPosition(stop : string) : int
     + isStopBefore(stopA : string, stopB : string) : bool
@@ -177,6 +184,7 @@ class Trip {
     - schedule : map<string, Time>
     - weekDay : int
     + Trip(id : int, r : shared_ptr<Route>, v : shared_ptr<Vehicle>, d : shared_ptr<Driver>, start : Time, day : int)
+    + ~Trip()
     + setArrivalTime(stop : string, time : Time) : void
     + getArrivalTime(stop : string) : Time
     + hasStop(stop : string) : bool
@@ -199,6 +207,7 @@ class Journey {
     - endTime : Time
     - transferCount : int
     + Journey(tripList : vector<shared_ptr<Trip>>, transfers : vector<string>, start : Time, end : Time)
+    + ~Journey()
     + getTotalDuration() : int
     + getTransferCount() : int
     + getStartTime() : Time
@@ -216,14 +225,14 @@ class DynamicArray<T> {
     + DynamicArray()
     + DynamicArray(initialSize : size_t)
     + DynamicArray(other : const DynamicArray&)
-    + =(other : const DynamicArray&) : DynamicArray&
+    + operator=(other : const DynamicArray&) : DynamicArray&
     + ~DynamicArray()
     + push_back(value : const T&) : void
     + push_back(value : T&&) : void
     + erase(it : Iterator) : void
     + erase(first : Iterator, last : Iterator) : void
-    + [](index : size_t) : T&
-    + [](index : size_t) : const T&
+    + operator[](index : size_t) : T&
+    + operator[](index : size_t) : const T&
     + front() : T&
     + front() : const T&
     + back() : T&
@@ -241,28 +250,29 @@ class DynamicArray<T> {
 class "DynamicArray<T>::Iterator" as DynamicArrayIterator {
     - ptr : T*
     + Iterator(p : T*)
-    + *() : T&
-    + *() : const T&
-    + ->() : T*
-    + ->() : const T*
-    + ++() : Iterator&
-    + ++(int) : Iterator
-    + --() : Iterator&
-    + --(int) : Iterator
-    + ==(other : Iterator) : bool
-    + !=(other : Iterator) : bool
-    + +(n : int) : Iterator
-    + -(n : int) : Iterator
-    + {friend} +(n : int, it : Iterator) : Iterator
-    + {friend} -(a : Iterator, b : Iterator) : int
-    + <(other : Iterator) : bool
-    + >(other : Iterator) : bool
-    + <=(other : Iterator) : bool
-    + >=(other : Iterator) : bool
-    + +=(n : int) : Iterator&
-    + -=(n : int) : Iterator&
-    + [](n : int) : T&
-    + [](n : int) : const T&
+    + ~Iterator()
+    + operator*() : T&
+    + operator*() : const T&
+    + operator->() : T*
+    + operator->() : const T*
+    + operator++() : Iterator&
+    + operator++(int) : Iterator
+    + operator--() : Iterator&
+    + operator--(int) : Iterator
+    + operator==(other : Iterator) : bool
+    + operator!=(other : Iterator) : bool
+    + operator+(n : int) : Iterator
+    + operator-(n : int) : Iterator
+    + {friend} operator+(n : int, it : Iterator) : Iterator
+    + {friend} operator-(a : Iterator, b : Iterator) : int
+    + operator<(other : Iterator) : bool
+    + operator>(other : Iterator) : bool
+    + operator<=(other : Iterator) : bool
+    + operator>=(other : Iterator) : bool
+    + operator+=(n : int) : Iterator&
+    + operator-=(n : int) : Iterator&
+    + operator[](n : int) : T&
+    + operator[](n : int) : const T&
 }
 
 ' Паттерн Command
@@ -277,6 +287,8 @@ class CommandHistory {
     - history : vector<unique_ptr<Command>>
     - currentIndex : size_t
     - MAX_HISTORY_SIZE : size_t
+    + CommandHistory()
+    + ~CommandHistory()
     + executeCommand(cmd : unique_ptr<Command>) : void
     + canUndo() : bool
     + undo() : void
@@ -453,6 +465,7 @@ class RouteSearchAlgorithm {
 class DataManager {
     - dataDirectory : string
     + DataManager(dir : string)
+    + ~DataManager()
     + saveAllData(system : TransportSystem&) : void
     + loadAllData(system : TransportSystem&) : void
     - saveStops(system : TransportSystem&) : void
@@ -472,6 +485,8 @@ class DataManager {
 class DriverSchedule {
     - driverTrips : unordered_map<shared_ptr<Driver>, vector<shared_ptr<Trip>>>
     - MAX_WORKING_HOURS : int
+    + DriverSchedule()
+    + ~DriverSchedule()
     + assignTripToDriver(driver : shared_ptr<Driver>, trip : shared_ptr<Trip>) : void
     + removeTripFromDriver(driver : shared_ptr<Driver>, tripId : int) : void
     + isDriverAvailable(driver : shared_ptr<Driver>, startTime : Time, endTime : Time) : bool
@@ -486,6 +501,7 @@ class JourneyPlanner {
     - fastestAlgorithm : unique_ptr<FastestPathAlgorithm>
     - minimalTransfersAlgorithm : unique_ptr<MinimalTransfersAlgorithm>
     + JourneyPlanner(sys : TransportSystem*)
+    + ~JourneyPlanner()
     + findJourneysWithTransfers(startStop : string, endStop : string, departureTime : Time, maxTransfers : int) : vector<Journey>
     + findAllJourneysWithTransfers(startStop : string, endStop : string, maxTransfers : int) : vector<Journey>
     + findFastestJourney(startStop : string, endStop : string, departureTime : Time) : Journey
@@ -508,6 +524,7 @@ class TransportSystem {
     - arrivalTimeAlgorithm : unique_ptr<ArrivalTimeCalculationAlgorithm>
     - routeSearchAlgorithm : unique_ptr<RouteSearchAlgorithm>
     + TransportSystem()
+    + ~TransportSystem()
     + canUndo() : bool
     + undo() : void
     + getLastCommandDescription() : string

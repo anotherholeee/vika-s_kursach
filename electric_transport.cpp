@@ -20,11 +20,6 @@ void ElectricTransport::setVoltage(double volt) {
     voltage = volt;
 }
 
-std::string ElectricTransport::getInfo() const {
-    return Vehicle::getInfo() + "|" + std::to_string(capacity) + "|" + 
-           std::to_string(voltage);
-}
-
 std::string ElectricTransport::serialize() const {
     return Vehicle::serialize() + "|" + std::to_string(capacity) + "|" + 
            std::to_string(voltage);

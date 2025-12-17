@@ -20,10 +20,6 @@ void FuelTransport::setFuelType(const std::string& fuel) {
     fuelType = fuel;
 }
 
-std::string FuelTransport::getInfo() const {
-    return Vehicle::getInfo() + "|" + std::to_string(capacity) + "|" + fuelType;
-}
-
 std::string FuelTransport::serialize() const {
     return Vehicle::serialize() + "|" + std::to_string(capacity) + "|" + fuelType;
 }

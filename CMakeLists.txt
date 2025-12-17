@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(vika's_kursach VERSION 1.0.0 LANGUAGES CXX)
+project(vikas_kursach VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -39,4 +39,3 @@ if(WIN32)
     # Установка кодировки UTF-8 для Windows
     target_compile_definitions(vikas_kursach PRIVATE UNICODE _UNICODE)
 endif()
-

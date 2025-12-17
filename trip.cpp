@@ -96,13 +96,12 @@ std::shared_ptr<Trip> Trip::deserialize(const std::string& data, TransportSystem
     int vehicleTokenIndex, driverTokenIndex, timeTokenIndex, scheduleTokenIndex;
 
     if (tokens.size() >= 11) {
-        // Формат: tripId|routeNumber|routeType|routeStops|routeDays|vehicleType|vehicleModel|licensePlate|capacity|fuelType|driverFirstName|driverLastName|driverMiddleName|startTime|weekDay|schedule
-        std::string routeData = tokens[1] + "|" + tokens[2] + "|" + tokens[3] + "|" + tokens[4];
+        std::string routeData = tokens[1] + "|" + tokens[2] + "|" + tokens[3];
         route = Route::deserialize(routeData);
-        vehicleTokenIndex = 5;
-        driverTokenIndex = 10;
-        timeTokenIndex = 13;
-        scheduleTokenIndex = 15;
+        vehicleTokenIndex = 4;
+        driverTokenIndex = 7;
+        timeTokenIndex = 10;
+        scheduleTokenIndex = 11;
     } else {
         route = Route::deserialize(tokens[1]);
         vehicleTokenIndex = 2;
@@ -200,16 +199,7 @@ std::shared_ptr<Trip> Trip::deserialize(const std::string& data, TransportSystem
             scheduleTokenIndex = timeTokenIndex + 1;
         }
     } else {
-        // Для формата с 11+ токенами: weekDay находится сразу после времени
-        if (timeTokenIndex + 1 < tokens.size()) {
-            try {
-                weekDay = std::stoi(tokens[timeTokenIndex + 1]);
-                if (weekDay < 1 || weekDay > 7) weekDay = 1;
-            } catch (...) {
-                weekDay = 1;
-            }
-        }
-        scheduleTokenIndex = timeTokenIndex + 2; // schedule идет после weekDay
+        scheduleTokenIndex = timeTokenIndex + 1;
     }
 
     if (!vehicle) {

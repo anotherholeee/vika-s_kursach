@@ -17,7 +17,6 @@ public:
     double getVoltage() const;
     void setVoltage(double volt);
 
-    std::string getInfo() const override;
     std::string serialize() const override;
 };
 

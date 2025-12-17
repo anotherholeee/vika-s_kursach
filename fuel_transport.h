@@ -17,7 +17,6 @@ public:
     std::string getFuelType() const;
     void setFuelType(const std::string& fuel);
 
-    std::string getInfo() const override;
     std::string serialize() const override;
 };
 

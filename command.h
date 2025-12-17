@@ -28,8 +28,11 @@ public:
     void executeCommand(std::unique_ptr<Command> cmd);
     bool canUndo() const;
     void undo();
+    bool canRedo() const;
+    void redo();
     void clear();
     std::string getLastCommandDescription() const;
+    std::string getNextCommandDescription() const;
 };
 
 #endif // COMMAND_H
