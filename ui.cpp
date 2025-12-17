@@ -1155,13 +1155,7 @@ void viewStopTimetable(TransportSystem& system) {
         for (const auto& trip : trips) {
             if (trip->hasStop(stopName)) {
                 int tripDay = trip->getWeekDay();
-                bool dayMatches = false;
-                if (weekDayChoice >= 1 && weekDayChoice <= 5) {
-                    dayMatches = (tripDay >= 1 && tripDay <= 5);
-                } else {
-                    dayMatches = (tripDay == weekDayChoice);
-                }
-                if (dayMatches) {
+                if (tripDay == weekDayChoice) {
                     Time arrivalTime = trip->getArrivalTime(stopName);
                     relevantTrips.push_back({trip->getTripId(), arrivalTime});
                 }
@@ -1248,13 +1242,7 @@ void viewTransportScheduleGuest(TransportSystem& system) {
         for (const auto& trip : trips) {
             if (trip->getRoute()->getVehicleType() == selectedType) {
                 int tripDay = trip->getWeekDay();
-                bool dayMatches = false;
-                if (weekDayChoice >= 1 && weekDayChoice <= 5) {
-                    dayMatches = (tripDay >= 1 && tripDay <= 5);
-                } else {
-                    dayMatches = (tripDay == weekDayChoice);
-                }
-                if (dayMatches) {
+                if (tripDay == weekDayChoice) {
                     filteredTrips.push_back(trip);
                 }
             }
@@ -1452,14 +1440,7 @@ void viewTransportSchedule(TransportSystem& system) {
             if (trip->getRoute()->getNumber() == selectedRoute->getNumber() &&
                 trip->getRoute()->getVehicleType() == selectedType) {
                 int tripDay = trip->getWeekDay();
-                bool dayMatches = false;
-                if (weekDayChoice >= 1 && weekDayChoice <= 5) {
-                    dayMatches = (tripDay >= 1 && tripDay <= 5);
-                } else {
-                    dayMatches = (tripDay == weekDayChoice);
-                }
-                
-                if (dayMatches && trip->hasStop(selectedStop)) {
+                if (tripDay == weekDayChoice && trip->hasStop(selectedStop)) {
                     Time arrivalTime = trip->getArrivalTime(selectedStop);
                     stopTimes.push_back({trip->getTripId(), arrivalTime});
                 }
@@ -1708,6 +1689,17 @@ void runAdminMode(TransportSystem& system) {
                     system.displayAllTrips();
                     system.displayAllVehicles();
                     system.displayAllStops();
+                    
+                    const auto& drivers = system.getDrivers();
+                    std::cout << "\n=== ВСЕ ВОДИТЕЛИ ===\n";
+                    if (drivers.empty()) {
+                        std::cout << "В системе нет водителей.\n";
+                    } else {
+                        for (const auto& driver : drivers) {
+                            std::cout << driver->getFullName() 
+                                      << " (Категория: " << driver->getCategory() << ")\n";
+                        }
+                    }
                     break;
                 }
                 case 13: system.saveData(); break;
